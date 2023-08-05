@@ -18,7 +18,9 @@
 package moe.rafal.firefly;
 
 import static java.lang.String.format;
+import static java.lang.String.valueOf;
 import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
+import static net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -30,7 +32,6 @@ import dev.rollczi.litecommands.command.route.Route;
 import java.util.concurrent.CompletableFuture;
 import moe.rafal.firefly.server.container.ContainerizedServerController;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
 @Permission("firefly.command.firefly")
 @Route(name = "firefly")
@@ -46,12 +47,35 @@ class FireflyCommand {
   @Permission("firefly.command.firefly.request")
   @Execute(route = "request")
   public CompletableFuture<Component> requestContainerizedServer() {
-    return serverController.createContainerizedServer()
+    return serverController.requestContainerizedServer()
         .thenApply(RegisteredServer::getServerInfo)
         .thenApply(ServerInfo::getName)
         .thenApply(serverName -> miniMessage().deserialize(format(
             "<gray>Server has been created and is now waking up. Click to copy <white><hover:show_text:'<gray>Click to copy into clipboard.'><click:copy_to_clipboard:'%s'>server name</click></hover></white>.",
             serverName)));
+  }
+
+  @Permission("firefly.command.firefly.inspect")
+  @Execute(route = "inspect")
+  public CompletableFuture<Component> inspectContainerizedServer(@Arg String serverName) {
+    String inspectionTemplate = """
+        <gray>Container inspection:
+        <dark_gray>> <gray>id: <white><container_id>
+        <dark_gray>> <gray>image(sha): <white><image_hash>
+        <dark_gray>> <gray>address: <white><published_address>:<published_port>
+        <dark_gray>> <gray>started: <white><container_started>
+        """;
+    return serverController.inspectContainerizedServer(serverName)
+        .thenApply(containerDetails -> miniMessage().deserialize(
+            inspectionTemplate,
+            unparsed("container_id", containerDetails.getContainerId()),
+            unparsed("image_hash", containerDetails.getImageHash()),
+            unparsed("published_address", containerDetails.getAddress()),
+            unparsed("published_port", valueOf(containerDetails.getPort())),
+            unparsed("container_started", containerDetails.getStartedAt().toString())
+        ))
+        .exceptionally(exception -> miniMessage().deserialize(
+            "<red>Could not inspect specified container, because it it was not requested by this proxy."));
   }
 
   @Permission("firefly.command.firefly.connect")
@@ -61,13 +85,6 @@ class FireflyCommand {
     return serverController.connectContainerizedServer(player, serverName)
         .thenApply(state -> miniMessage().deserialize(
             "<gray>Your connection is being established with server <white><server_name><gray>.",
-            Placeholder.unparsed("server_name", serverName)));
-  }
-
-  @Permission("firefly.command.firefly.inspect")
-  @Execute(route = "inspect")
-  public CompletableFuture<Component> inspectContainerizedServer(Player player,
-      @Arg String serverName) {
-    throw new UnsupportedOperationException("Not implemented yet");
+            unparsed("server_name", serverName)));
   }
 }

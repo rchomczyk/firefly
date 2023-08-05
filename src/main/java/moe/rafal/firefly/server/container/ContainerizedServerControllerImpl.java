@@ -29,6 +29,7 @@ import java.net.ServerSocket;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import moe.rafal.agnes.Agnes;
+import moe.rafal.agnes.container.ContainerDetails;
 import moe.rafal.agnes.container.specification.ContainerSpecification;
 import moe.rafal.agnes.container.specification.ContainerSpecificationBuilder;
 import moe.rafal.agnes.image.Image;
@@ -49,11 +50,23 @@ class ContainerizedServerControllerImpl implements ContainerizedServerController
   }
 
   @Override
-  public CompletableFuture<RegisteredServer> createContainerizedServer() {
+  public CompletableFuture<RegisteredServer> requestContainerizedServer() {
     return agnes.createContainer(getDefaultServerSpecification())
         .thenCompose(agnes::startContainer)
         .thenCompose(agnes::inspectContainer)
         .thenApply(serverRegistry::registerServer);
+  }
+
+  @Override
+  public CompletableFuture<ContainerDetails> inspectContainerizedServer(String serverName)
+      throws ContainerizedServerInspectException {
+    final boolean whetherServerIsRegistered = serverRegistry.getServerByName(serverName).isEmpty();
+    if (whetherServerIsRegistered) {
+      return CompletableFuture.failedFuture(new ContainerizedServerInspectException(format(
+          "Could not find registered server named %s so inspection has been denied.",
+          serverName)));
+    }
+    return agnes.inspectContainer(serverName);
   }
 
   @Override
@@ -76,7 +89,7 @@ class ContainerizedServerControllerImpl implements ContainerizedServerController
             new String[]{"EULA=true", "TYPE=CUSTOM", "ONLINE_MODE=false", "USE_AIKAR_FLAGS=true",
                 format("CUSTOM_SERVER=%s", pluginConfig.serverConfiguration.customServerPath),
                 format("GENERIC_PACKS=%s",
-                    join(", ", pluginConfig.serverConfiguration.genericPacks)),
+                    join(",", pluginConfig.serverConfiguration.genericPacks)),
                 format("GENERIC_PACKS_PREFIX=%s",
                     pluginConfig.serverConfiguration.genericPackPrefix),
                 format("GENERIC_PACKS_SUFFIX=%s",
@@ -88,11 +101,11 @@ class ContainerizedServerControllerImpl implements ContainerizedServerController
         .build();
   }
 
-  private Integer findAnyAvailablePort() throws ContainerizedServerCreationException {
+  private Integer findAnyAvailablePort() throws ContainerizedServerRequestException {
     try (ServerSocket socket = new ServerSocket(SERVER_SOCKET_CHOOSE_ANY_AVAILABLE_PORT)) {
       return socket.getLocalPort();
     } catch (IOException exception) {
-      throw new ContainerizedServerCreationException(
+      throw new ContainerizedServerRequestException(
           "Could not find any available port, with use of server socket assignation method.",
           exception);
     }

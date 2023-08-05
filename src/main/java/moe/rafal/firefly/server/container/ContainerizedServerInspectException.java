@@ -17,19 +17,9 @@
 
 package moe.rafal.firefly.server.container;
 
-import com.velocitypowered.api.proxy.ConnectionRequestBuilder.Result;
-import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.api.proxy.server.RegisteredServer;
-import java.util.concurrent.CompletableFuture;
-import moe.rafal.agnes.container.ContainerDetails;
+public class ContainerizedServerInspectException extends IllegalArgumentException {
 
-public interface ContainerizedServerController {
-
-  CompletableFuture<RegisteredServer> requestContainerizedServer()
-      throws ContainerizedServerRequestException;
-
-  CompletableFuture<ContainerDetails> inspectContainerizedServer(String serverName)
-      throws ContainerizedServerInspectException;
-
-  CompletableFuture<Result> connectContainerizedServer(Player player, String serverName);
+  ContainerizedServerInspectException(String message) {
+    super(message);
+  }
 }

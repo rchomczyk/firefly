@@ -17,9 +17,9 @@
 
 package moe.rafal.firefly.server.container;
 
-public class ContainerizedServerCreationException extends IllegalStateException {
+public class ContainerizedServerRequestException extends IllegalStateException {
 
-  ContainerizedServerCreationException(String message, Throwable throwable) {
+  ContainerizedServerRequestException(String message, Throwable throwable) {
     super(message, throwable);
   }
 }

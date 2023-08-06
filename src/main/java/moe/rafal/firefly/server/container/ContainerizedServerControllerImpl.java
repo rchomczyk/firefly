@@ -19,6 +19,7 @@ package moe.rafal.firefly.server.container;
 
 import static java.lang.String.format;
 import static java.lang.String.join;
+import static moe.rafal.agnes.AgnesUtils.parseDataSize;
 
 import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
 import com.velocitypowered.api.proxy.ConnectionRequestBuilder.Result;
@@ -80,8 +81,8 @@ class ContainerizedServerControllerImpl implements ContainerizedServerController
   private ContainerSpecification getDefaultServerSpecification() {
     return ContainerSpecificationBuilder.newBuilder()
         .withImage(new Image("itzg/minecraft-server", "latest"))
-        .withAssignedMemory(pluginConfig.serverConfiguration.availableMemory)
-        .withAssignedMemorySwap(pluginConfig.serverConfiguration.availableMemorySwap)
+        .withAssignedMemory(parseDataSize(pluginConfig.serverConfiguration.availableMemory))
+        .withAssignedMemorySwap(parseDataSize(pluginConfig.serverConfiguration.availableMemorySwap))
         .withHostname(pluginConfig.serverConfiguration.hostname)
         .withExposedPorts(new String[]{"25565/tcp"})
         .withPublishPorts(new String[]{format("25565/tcp:%d", findAnyAvailablePort())})

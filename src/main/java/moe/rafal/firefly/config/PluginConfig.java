@@ -18,7 +18,6 @@
 package moe.rafal.firefly.config;
 
 import static java.util.Arrays.asList;
-import static moe.rafal.agnes.AgnesUtils.getBytesCountOf;
 
 import eu.okaeri.configs.OkaeriConfig;
 import eu.okaeri.configs.annotation.Comment;
@@ -60,10 +59,10 @@ public class PluginConfig extends OkaeriConfig {
     public List<String> genericPacks = asList("Ywq1ufTVrde7", "772cqORmN3zd");
 
     @Comment("Determines amount of memory, which will be available for containerized server.")
-    public long availableMemory = getBytesCountOf(1);
+    public String availableMemory = "512MB";
 
     @Comment("Determines amount of memory located in swap, which will be available for containerized server.")
-    public long availableMemorySwap = getBytesCountOf(2);
+    public String availableMemorySwap = "2GB";
   }
 
   @Comment("Configuration for message broker, used to configure cory messaging library.")

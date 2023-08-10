@@ -72,8 +72,11 @@ public class PluginConfig extends OkaeriConfig {
   @Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
   public static class MessageBrokerConfiguration extends OkaeriConfig {
 
-    @Comment("Determines connection uri for communication with messaging server.")
-    public String connectionUri = "redis://127.0.0.1:6379";
+    @Comment("Determines hostname, which will be used to connect to messaging server.")
+    public String hostname = "127.0.0.1";
+
+    @Comment("Determines port, on which is bound messaging server.")
+    public int port = 6379;
 
     @Comment("Determines username used to confirm identity for messaging server.")
     public String username = "firefly_identity";

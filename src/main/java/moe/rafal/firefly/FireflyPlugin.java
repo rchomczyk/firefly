@@ -22,7 +22,6 @@ import static moe.rafal.firefly.FireflyConstants.PLUGIN_ARTIFACT_ID;
 import static moe.rafal.firefly.FireflyConstants.PLUGIN_AUTHORS;
 import static moe.rafal.firefly.FireflyConstants.PLUGIN_VERSION;
 import static moe.rafal.firefly.FireflyConstants.WHETHER_COMMANDS_SHOULD_USE_NATIVE_PERMISSION;
-import static moe.rafal.firefly.FireflyUtils.createRedisUriWithConfiguration;
 import static moe.rafal.firefly.config.ConfigFacadeFactory.produceConfigFacade;
 import static moe.rafal.firefly.config.PluginConfig.PLUGIN_CONFIG_FILE_NAME;
 import static moe.rafal.firefly.server.container.ContainerizedServerControllerFactory.produceContainerizedServerController;
@@ -41,6 +40,7 @@ import dev.rollczi.litecommands.velocity.LiteVelocityFactory;
 import dev.rollczi.litecommands.velocity.tools.VelocityOnlyPlayerContextual;
 import eu.okaeri.configs.serdes.commons.SerdesCommons;
 import eu.okaeri.configs.yaml.snakeyaml.YamlSnakeYamlConfigurer;
+import io.lettuce.core.RedisURI;
 import java.io.IOException;
 import java.nio.file.Path;
 import moe.rafal.agnes.Agnes;
@@ -70,8 +70,14 @@ public class FireflyPlugin {
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
     cory = CoryBuilder.newBuilder()
-        .withMessageBroker(produceRedisMessageBroker(createRedisUriWithConfiguration(
-            pluginConfig.messageBroker),
+        .withMessageBroker(produceRedisMessageBroker(
+            RedisURI.builder()
+                .withHost(pluginConfig.messageBroker.hostname)
+                .withPort(pluginConfig.messageBroker.port)
+                .withAuthentication(
+                    pluginConfig.messageBroker.username,
+                    pluginConfig.messageBroker.password.toCharArray())
+                .build(),
             pluginConfig.messageBroker.requestCleanupInterval))
         .build();
     final Agnes agnes = AgnesBuilder.newBuilder()

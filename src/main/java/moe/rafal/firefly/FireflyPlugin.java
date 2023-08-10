@@ -17,11 +17,12 @@
 
 package moe.rafal.firefly;
 
-import static moe.rafal.cory.message.MessageBrokerFactory.produceMessageBroker;
+import static moe.rafal.cory.message.RedisMessageBrokerFactory.produceRedisMessageBroker;
 import static moe.rafal.firefly.FireflyConstants.PLUGIN_ARTIFACT_ID;
 import static moe.rafal.firefly.FireflyConstants.PLUGIN_AUTHORS;
 import static moe.rafal.firefly.FireflyConstants.PLUGIN_VERSION;
 import static moe.rafal.firefly.FireflyConstants.WHETHER_COMMANDS_SHOULD_USE_NATIVE_PERMISSION;
+import static moe.rafal.firefly.FireflyUtils.createRedisUriWithConfiguration;
 import static moe.rafal.firefly.config.ConfigFacadeFactory.produceConfigFacade;
 import static moe.rafal.firefly.config.PluginConfig.PLUGIN_CONFIG_FILE_NAME;
 import static moe.rafal.firefly.server.container.ContainerizedServerControllerFactory.produceContainerizedServerController;
@@ -46,7 +47,6 @@ import moe.rafal.agnes.Agnes;
 import moe.rafal.agnes.AgnesBuilder;
 import moe.rafal.cory.Cory;
 import moe.rafal.cory.CoryBuilder;
-import moe.rafal.cory.message.MessageBrokerSpecification;
 import moe.rafal.firefly.config.ConfigFacade;
 import moe.rafal.firefly.config.PluginConfig;
 import moe.rafal.firefly.server.container.ContainerizedServerController;
@@ -70,11 +70,9 @@ public class FireflyPlugin {
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
     cory = CoryBuilder.newBuilder()
-        .withMessageBroker(produceMessageBroker(MessageBrokerSpecification.of(
-            pluginConfig.messageBroker.connectionUri,
-            pluginConfig.messageBroker.username,
-            pluginConfig.messageBroker.password,
-            pluginConfig.messageBroker.requestCleanupInterval)))
+        .withMessageBroker(produceRedisMessageBroker(createRedisUriWithConfiguration(
+            pluginConfig.messageBroker),
+            pluginConfig.messageBroker.requestCleanupInterval))
         .build();
     final Agnes agnes = AgnesBuilder.newBuilder()
         .withCory(cory)

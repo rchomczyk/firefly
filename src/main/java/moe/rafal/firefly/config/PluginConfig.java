@@ -17,6 +17,7 @@
 
 package moe.rafal.firefly.config;
 
+import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
 
 import eu.okaeri.configs.OkaeriConfig;
@@ -72,7 +73,7 @@ public class PluginConfig extends OkaeriConfig {
   public static class MessageBrokerConfiguration extends OkaeriConfig {
 
     @Comment("Determines connection uri for communication with messaging server.")
-    public String connectionUri = "nats://127.0.0.1:4222";
+    public String connectionUri = "redis://127.0.0.1:6379";
 
     @Comment("Determines username used to confirm identity for messaging server.")
     public String username = "firefly_identity";
@@ -81,6 +82,6 @@ public class PluginConfig extends OkaeriConfig {
     public String password = "my-secret-password-123";
 
     @Comment("Determines the period after which request will be timed out, if will not receive replying packet.")
-    public Duration requestCleanupInterval = Duration.ofSeconds(20);
+    public Duration requestCleanupInterval = ofSeconds(20);
   }
 }

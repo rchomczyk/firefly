@@ -20,6 +20,7 @@ package moe.rafal.firefly.server.container;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static moe.rafal.agnes.AgnesUtils.parseDataSize;
+import static moe.rafal.agnes.proto.container.ContainerCreationType.CREATE_AND_RUN;
 
 import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
 import com.velocitypowered.api.proxy.ConnectionRequestBuilder.Result;
@@ -53,7 +54,6 @@ class ContainerizedServerControllerImpl implements ContainerizedServerController
   @Override
   public CompletableFuture<RegisteredServer> requestContainerizedServer() {
     return agnes.createContainer(getDefaultServerSpecification())
-        .thenCompose(agnes::startContainer)
         .thenCompose(agnes::inspectContainer)
         .thenApply(serverRegistry::registerServer);
   }
@@ -99,6 +99,7 @@ class ContainerizedServerControllerImpl implements ContainerizedServerController
             format("%s:/data",
                 format(pluginConfig.serverConfiguration.bindTemplatePath, UUID.randomUUID()))
         })
+        .withCreationType(CREATE_AND_RUN)
         .build();
   }
 

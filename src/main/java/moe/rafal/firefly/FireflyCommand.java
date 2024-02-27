@@ -64,7 +64,7 @@ class FireflyCommand {
         <dark_gray>> <gray>image(sha): <white><image_hash>
         <dark_gray>> <gray>address: <white><published_address>:<published_port>
         <dark_gray>> <gray>started: <white><container_started>
-        """;
+        """.trim();
     return serverController.inspectContainerizedServer(serverName)
         .thenApply(containerDetails -> miniMessage().deserialize(
             inspectionTemplate,

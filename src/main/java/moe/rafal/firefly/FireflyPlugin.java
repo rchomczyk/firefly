@@ -41,12 +41,15 @@ import dev.rollczi.litecommands.velocity.tools.VelocityOnlyPlayerContextual;
 import eu.okaeri.configs.serdes.commons.SerdesCommons;
 import eu.okaeri.configs.yaml.snakeyaml.YamlSnakeYamlConfigurer;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.RedisURI.Builder;
 import java.io.IOException;
 import java.nio.file.Path;
 import moe.rafal.agnes.Agnes;
 import moe.rafal.agnes.AgnesBuilder;
 import moe.rafal.cory.Cory;
 import moe.rafal.cory.CoryBuilder;
+import moe.rafal.cory.serdes.MessagePackPacketPackerFactory;
+import moe.rafal.cory.serdes.MessagePackPacketUnpackerFactory;
 import moe.rafal.firefly.config.ConfigFacade;
 import moe.rafal.firefly.config.PluginConfig;
 import moe.rafal.firefly.server.container.ContainerizedServerController;
@@ -70,15 +73,15 @@ public class FireflyPlugin {
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
     cory = CoryBuilder.newBuilder()
-        .withMessageBroker(produceRedisMessageBroker(
-            RedisURI.builder()
-                .withHost(pluginConfig.messageBroker.hostname)
-                .withPort(pluginConfig.messageBroker.port)
-                .withAuthentication(
-                    pluginConfig.messageBroker.username,
-                    pluginConfig.messageBroker.password.toCharArray())
-                .build(),
-            pluginConfig.messageBroker.requestCleanupInterval))
+        .withPacketPackerFactory(MessagePackPacketPackerFactory.INSTANCE)
+        .withPacketUnpackerFactory(MessagePackPacketUnpackerFactory.INSTANCE)
+        .withMessageBroker(
+            produceRedisMessageBroker(
+                MessagePackPacketPackerFactory.INSTANCE,
+                MessagePackPacketUnpackerFactory.INSTANCE,
+                produceRedisUri()
+            )
+        )
         .build();
     final Agnes agnes = AgnesBuilder.newBuilder()
         .withCory(cory)
@@ -94,6 +97,20 @@ public class FireflyPlugin {
             miniMessage().deserialize("<red>You cannot use that command from Console.")))
         .commandInstance(new FireflyCommand(serverController))
         .register();
+  }
+
+  private RedisURI produceRedisUri() {
+    Builder builder = RedisURI.builder()
+        .withHost(pluginConfig.messageBroker.hostname)
+        .withPort(pluginConfig.messageBroker.port);
+    if (pluginConfig.messageBroker.requiresAuthentication) {
+      builder = builder
+          .withAuthentication(
+              pluginConfig.messageBroker.username,
+              pluginConfig.messageBroker.password.toCharArray());
+    }
+
+    return builder.build();
   }
 
   @Subscribe

@@ -78,6 +78,9 @@ public class PluginConfig extends OkaeriConfig {
     @Comment("Determines port, on which is bound messaging server.")
     public int port = 6379;
 
+    @Comment("Determines whether authentication is required to connect to messaging server.")
+    public boolean requiresAuthentication = false;
+
     @Comment("Determines username used to confirm identity for messaging server.")
     public String username = "firefly_identity";
 

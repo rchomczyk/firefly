@@ -57,7 +57,9 @@ class FireflyCommand {
 
   @Permission("firefly.command.firefly.inspect")
   @Execute(route = "inspect")
-  public CompletableFuture<Component> inspectContainerizedServer(@Arg String serverName) {
+  public CompletableFuture<Component> inspectContainerizedServer(
+      @Arg String serverName
+  ) {
     String inspectionTemplate = """
         <gray>Container inspection:
         <dark_gray>> <gray>id: <white><container_id>
@@ -81,7 +83,8 @@ class FireflyCommand {
   @Permission("firefly.command.firefly.connect")
   @Execute(route = "connect")
   public CompletableFuture<Component> connectContainerizedServer(Player player,
-      @Arg String serverName) {
+      @Arg String serverName
+  ) {
     return serverController.connectContainerizedServer(player, serverName)
         .thenApply(state -> miniMessage().deserialize(
             "<gray>Your connection is being established with server <white><server_name><gray>.",
